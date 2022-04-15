@@ -3,7 +3,7 @@ def buffer(inShp:str, fname:str, bdistance=0.0005:float)-> Bool:
     :param inShp: 输入的矢量路径
     :param fname: 输出的矢量路径
     :param bdistance: 缓冲区距离
-    :return:
+    : return:
     """
     ogr.UseExceptions()
     in_ds = ogr.Open(inShp)
