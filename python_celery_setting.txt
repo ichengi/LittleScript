@@ -1,0 +1,78 @@
+#django配置celery任务
+
+1.安装包
+celery
+redis
+django-celery-beat
+django-celery-results（非必须，存储任务结果）
+folower（非必须，监控celery运行任务状态）
+
+2.在主项目下新建celery.py (与settings.py同级)，添加代码如下
+import os
+from celery import Celery
+
+# 设置环境变量
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
+
+# 实例化
+app = Celery('myproject')
+
+# namespace='CELERY'作用是允许你在Django配置文件中对Celery进行配置
+# 但所有Celery配置项必须以CELERY开头，防止冲突
+app.config_from_object('django.conf:settings', namespace='CELERY')
+
+# 自动从Django的已注册app中发现任务
+app.autodiscover_tasks()
+
+3.修改主项目的__init__.py文件（与settings.py同级），添加代码如下
+from .celery import app as celery_app
+__all__ = ('celery_app',) 
+
+4.修改主项目的settings配置文件，添加代码如下
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND =  "redis://127.0.0.1:6379/1"
+CELERY_TRANSPORT_OPTIONS={'visibility_timeout': 3600} #连接超时
+CELERY_TIMEZONE = TIME_ZONE #时区
+# celery内容等消息的格式设置，默认json
+CELERY_ACCEPT_CONTENT = ['application/json', ]
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+# 为任务设置超时时间，单位秒。超时即中止，执行下个任务。
+CELERY_TASK_TIME_LIMIT = 5
+
+# 为存储结果设置过期日期，默认1天过期。如果beat开启，Celery每天会自动清除。
+# 设为0，存储结果永不过期
+CELERY_RESULT_EXPIRES = 60*60*24  #（可以是timedelta）
+
+# 任务限流
+CELERY_TASK_ANNOTATIONS = {'tasks.add': {'rate_limit': '10/s'}}
+
+# Worker并发数量，一般默认CPU核数，可以不设置
+CELERY_WORKER_CONCURRENCY = 2
+
+# 每个worker执行了多少任务就会死掉，默认是无限的
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 200
+
+
+5.编写任务 在app目录下新建tasks.py文件（与默认的app的urls同级）示例代码：
+from celery import shared_task
+@shared_task
+def add(x, y):
+    return x + y
+    
+6.可忽略的一步   理论上命名为tasks.py 会自动被找到，防止意外需要手动注册一下
+在settings.py中加入  CELERY_IMPORTS = (f"{your app name}.tasks",)
+
+
+7.开启celery监听任务 
+celery  -A your-project-name worker -l debug    #windows中需要加 --pool=solo
+
+
+8.调用异步任务在视图中
+from .tasks import add
+
+def test_view(request):
+    add.delay(1,11)
+    return HttpResponse("Celery works")
+    
