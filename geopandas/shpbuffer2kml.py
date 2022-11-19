@@ -1,4 +1,9 @@
-def buffer(inShp:str, fname:str, bdistance=0.0005:float)-> Bool:
+from pathlib import Path
+
+import ogr as ogr
+
+
+def buffer(inShp:str, fname:str, bdistance=0.0005)-> bool:
     """
     :param inShp: 输入的矢量路径
     :param fname: 输出的矢量路径

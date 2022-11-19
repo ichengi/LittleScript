@@ -1,3 +1,10 @@
+import os
+import re
+
+import exifread as exifread
+import pandas as pd
+
+
 def latitude_and_longitude_convert_to_decimal_system(*arg):
     """
     经纬度转为小数
@@ -47,9 +54,8 @@ def get_pos1(jppgpath: str):
   
   
 # 将数据写入excel
-def write2excel(resexcelfile:str，posdata:'pandas.core.frame.DataFrame'):
+def write2excel(resexcelfile:str,posdata:'pandas.core.frame.DataFrame',dirpath:str):
     sheetname = 'sheet1'
-        
     writer = pd.ExcelWriter(resexcelfile, engine='openpyxl')
     for idx, row in posdata.iterrows():
         posdata.loc[idx, 'Path'] = os.path.join(dirpath, posdata.loc[idx, 'Path'])
