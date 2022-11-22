@@ -1,6 +1,7 @@
 #获取微信公众号文章列表   包含：标题、简介、地址、封面图
 #需求  BeautifulSoup #解析网页   selenium  # 模拟登录   psycopg # 存储数据 
 #chromedriver_win32  # 谷歌浏览器驱动，selenium需要
+# 注意，这里的链接是长链接，需要去文章地址获取短链接，这样微信小程序才能直接跳转
 def get_gzh(token,fakeid,count,total)->list:
   # '"name","type","synopsis", "thumb", "time", "web_url","create_time","update_time"' 
     res = []
