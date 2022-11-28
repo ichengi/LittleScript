@@ -26,5 +26,13 @@ def get_data():
     with open(rf'data/高新通载体通数据.json', 'w', encoding='utf-8') as f:
         json.dump(res, f, ensure_ascii=False, indent=4)
 
+def tran_excel():
+    import pandas as pd
+    with open(rf'data/高新通载体通数据.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    df = pd.DataFrame(data)
+    df.to_excel(rf'data/高新通载体通数据.xlsx', index=False)
+
 if __name__ == '__main__':
     get_data()
+    tran_excel()
